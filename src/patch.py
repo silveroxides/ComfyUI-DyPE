@@ -31,9 +31,9 @@ class FluxPosEmbed(nn.Module):
         for i in range(n_axes):
             axis_pos = pos[..., i]
             axis_dim = self.axes_dim[i]
-            
+
             common_kwargs = {'dim': axis_dim, 'pos': axis_pos, 'theta': self.theta, 'repeat_interleave_real': True, 'use_real': True, 'freqs_dtype': freqs_dtype}
-            
+
             # Pass the exponent to the RoPE function
             dype_kwargs = {'dype': self.dype, 'current_timestep': self.current_timestep, 'dype_exponent': self.dype_exponent}
 
@@ -64,7 +64,7 @@ class FluxPosEmbed(nn.Module):
 
 def apply_dype_to_flux(model: ModelPatcher, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float, base_shift: float, max_shift: float) -> ModelPatcher:
     m = model.clone()
-    
+
     if not hasattr(m.model.model_sampling, "_dype_patched"):
         model_sampler = m.model.model_sampling
         if isinstance(model_sampler, model_sampling.ModelSamplingFlux):
@@ -91,7 +91,7 @@ def apply_dype_to_flux(model: ModelPatcher, width: int, height: int, method: str
 
     new_pe_embedder = FluxPosEmbed(theta, axes_dim, method, enable_dype, dype_exponent)
     m.add_object_patch("diffusion_model.pe_embedder", new_pe_embedder)
-    
+
     sigma_max = m.model.model_sampling.sigma_max.item()
 
     def dype_wrapper_function(model_function, args_dict):
@@ -102,17 +102,17 @@ def apply_dype_to_flux(model: ModelPatcher, width: int, height: int, method: str
                 if sigma_max > 0:
                     normalized_timestep = min(max(current_sigma / sigma_max, 0.0), 1.0)
                     new_pe_embedder.set_timestep(normalized_timestep)
-        
+
         input_x, c = args_dict.get("input"), args_dict.get("c", {})
         return model_function(input_x, args_dict.get("timestep"), **c)
 
     m.set_model_unet_function_wrapper(dype_wrapper_function)
-    
+
     return m
 
 def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float, shift: float) -> ModelPatcher:
     m = model.clone()
-    
+
     if not hasattr(m.model.model_sampling, "_dype_patched"):
         model_sampler = m.model.model_sampling
         if isinstance(model_sampler, model_sampling.ModelSamplingDiscreteFlow):
@@ -139,7 +139,7 @@ def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: s
 
     new_pe_embedder = FluxPosEmbed(theta, axes_dim, method, enable_dype, dype_exponent)
     m.add_object_patch("diffusion_model.pe_embedder", new_pe_embedder)
-    
+
     sigma_max = m.model.model_sampling.sigma_max.item()
 
     def dype_wrapper_function(model_function, args_dict):
@@ -150,10 +150,60 @@ def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: s
                 if sigma_max > 0:
                     normalized_timestep = min(max(current_sigma / sigma_max, 0.0), 1.0)
                     new_pe_embedder.set_timestep(normalized_timestep)
-        
+
         input_x, c = args_dict.get("input"), args_dict.get("c", {})
         return model_function(input_x, args_dict.get("timestep"), **c)
 
     m.set_model_unet_function_wrapper(dype_wrapper_function)
-    
+
+    return m
+
+def apply_dype_to_wan(model: ModelPatcher, width: int, height: int, length: int, method: str, enable_dype: bool, dype_exponent: float, shift: float) -> ModelPatcher:
+    m = model.clone()
+
+    if not hasattr(m.model.model_sampling, "_dype_patched"):
+        model_sampler = m.model.model_sampling
+        if isinstance(model_sampler, model_sampling.ModelSamplingDiscreteFlow):
+            patch_size_t = m.model.diffusion_model.patch_size[0]
+            patch_size_h = m.model.diffusion_model.patch_size[1]
+            patch_size_w = m.model.diffusion_model.patch_size[2]
+            latent_t, latent_h, latent_w = length // 4, height // 8, width // 8
+            padded_t, padded_h, padded_w = math.ceil(latent_t / patch_size_t) * patch_size_t, math.ceil(latent_h / patch_size_h) * patch_size_h, math.ceil(latent_w / patch_size_w) * patch_size_w
+            image_seq_len = (padded_t // patch_size_t) * (padded_h // patch_size_h) * (padded_w // patch_size_w)
+            base_seq_len, max_seq_len = 256, 4096
+            slope = shift / (max_seq_len - base_seq_len)
+            intercept = shift - slope * base_seq_len
+            dype_shift = image_seq_len * slope + intercept
+
+            def patched_sigma_func(self, timestep):
+                return model_sampling.time_snr_shift(dype_shift, timestep)
+
+            model_sampler.sigma = types.MethodType(patched_sigma_func, model_sampler)
+            model_sampler._dype_patched = True
+
+    try:
+        orig_embedder = m.model.diffusion_model.rope_embedder
+        theta, axes_dim = orig_embedder.theta, orig_embedder.axes_dim
+    except AttributeError:
+        raise ValueError("The provided model is not a compatible Chroma model.")
+
+    new_rope_embedder = FluxPosEmbed(theta, axes_dim, method, enable_dype, dype_exponent)
+    m.add_object_patch("diffusion_model.rope_embedder", new_rope_embedder)
+
+    sigma_max = m.model.model_sampling.sigma_max.item()
+
+    def dype_wrapper_function(model_function, args_dict):
+        if enable_dype:
+            timestep_tensor = args_dict.get("timestep")
+            if timestep_tensor is not None and timestep_tensor.numel() > 0:
+                current_sigma = timestep_tensor.item()
+                if sigma_max > 0:
+                    normalized_timestep = min(max(current_sigma / sigma_max, 0.0), 1.0)
+                    new_rope_embedder.set_timestep(normalized_timestep)
+
+        input_x, c = args_dict.get("input"), args_dict.get("c", {})
+        return model_function(input_x, args_dict.get("timestep"), **c)
+
+    m.set_model_unet_function_wrapper(dype_wrapper_function)
+
     return m
