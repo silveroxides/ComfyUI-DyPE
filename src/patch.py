@@ -169,7 +169,8 @@ def apply_dype_to_wan(model: ModelPatcher, width: int, height: int, length: int,
             patch_size_w = m.model.diffusion_model.patch_size[2]
             latent_t, latent_h, latent_w = length // 4, height // 8, width // 8
             padded_t, padded_h, padded_w = math.ceil(latent_t / patch_size_t) * patch_size_t, math.ceil(latent_h / patch_size_h) * patch_size_h, math.ceil(latent_w / patch_size_w) * patch_size_w
-            image_seq_len = ((padded_t // patch_size_t) * (padded_h // patch_size_h)) * ((padded_t // patch_size_t) * (padded_w // patch_size_w))
+            # image_seq_len = ((padded_t // patch_size_t) * (padded_h // patch_size_h)) * ((padded_t // patch_size_t) * (padded_w // patch_size_w))
+            image_seq_len = (padded_h // patch_size_h) * (padded_w // patch_size_w)
             base_seq_len, max_seq_len = 256, 4096
             slope = shift / (max_seq_len - base_seq_len)
             intercept = shift - slope * base_seq_len
