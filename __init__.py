@@ -46,7 +46,7 @@ class DyPE_FLUX(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "dype_exponent",
-                    default=2.0, min=0.0, max=4.0, step=0.1,
+                    default=2.0, min=0.0, max=100.0, step=0.1,
                     optional=True,
                     tooltip="Controls DyPE strength over time (λt). 2.0=Exponential (best for 4K+), 1.0=Linear, 0.5=Sub-linear (better for ~2K)."
                 ),
@@ -126,7 +126,7 @@ class DyPE_Chroma(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "dype_exponent",
-                    default=2.0, min=0.0, max=4.0, step=0.1,
+                    default=2.0, min=0.0, max=100.0, step=0.1,
                     optional=True,
                     tooltip="Controls DyPE strength over time (λt). 2.0=Exponential (best for 4K+), 1.0=Linear, 0.5=Sub-linear (better for ~2K)."
                 ),
@@ -205,7 +205,7 @@ class DyPE_Wan(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "dype_exponent",
-                    default=2.0, min=0.0, max=4.0, step=0.1,
+                    default=2.0, min=0.0, max=100.0, step=0.1,
                     optional=True,
                     tooltip="Controls DyPE strength over time (λt). 2.0=Exponential (best for 4K+), 1.0=Linear, 0.5=Sub-linear (better for ~2K)."
                 ),
