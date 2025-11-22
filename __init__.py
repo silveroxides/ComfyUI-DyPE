@@ -1,4 +1,5 @@
 import torch
+import math
 from comfy_api.latest import ComfyExtension, io
 from .src.patch import apply_dype_to_flux, apply_dype_to_chroma, apply_dype_to_wan
 
@@ -126,7 +127,7 @@ class DyPE_Chroma(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "dype_exponent",
-                    default=2.0, min=0.0, max=100.0, step=0.1,
+                    default=2.0, min=0.0, max=1000.0, step=0.1,
                     optional=True,
                     tooltip="Controls DyPE strength over time (λt). 2.0=Exponential (best for 4K+), 1.0=Linear, 0.5=Sub-linear (better for ~2K)."
                 ),
@@ -135,6 +136,17 @@ class DyPE_Chroma(io.ComfyNode):
                     default=1.0, min=0.0, max=10.0, step=0.01,
                     optional=True,
                     tooltip="Advanced: Shift for the noise schedule (mu) at high resolutions. Default is 1.0."
+                ),
+                io.Float.Input(
+                    "start_at_sigma",
+                    default=1.0, min=0.0, max=10.0, step=0.001,
+                    optional=True,
+                    tooltip="Advanced: When to start applying DyPE based on the sigma of the timestep. Default is 1.0."
+                ),
+                io.Int.Input(
+                    "base_resolution",
+                    default=1024, min=0, max=8192, step=8,
+                    tooltip="Model resolution base value. Set to 0 to take the square root of width multiplied by height."
                 ),
             ],
             outputs=[
@@ -146,14 +158,17 @@ class DyPE_Chroma(io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, model, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float = 2.0, shift: float = 1.0) -> io.NodeOutput:
+    def execute(cls, model, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float = 2.0, shift: float = 1.0, start_at_sigma:float = 1.0, base_resolution:int = 1024) -> io.NodeOutput:
         """
         Clones the model and applies the DyPE patch for both the noise schedule and positional embeddings.
         """
         if not hasattr(model.model, "diffusion_model") or not hasattr(model.model.diffusion_model, "pe_embedder"):
              raise ValueError("This node is only compatible with Chroma models.")
 
-        patched_model = apply_dype_to_chroma(model, width, height, method, enable_dype, dype_exponent, shift)
+        if base_resolution == 0:
+            base_resolution = math.isqrt(width * height)
+
+        patched_model = apply_dype_to_chroma(model, width, height, method, enable_dype, dype_exponent, shift, start_at_sigma, base_resolution)
         return io.NodeOutput(patched_model)
 
 class DyPE_Wan(io.ComfyNode):
