@@ -8,7 +8,7 @@ from .rope import get_1d_rotary_pos_embed
 
 
 class FluxPosEmbed(nn.Module):
-    def __init__(self, theta: int, axes_dim: list[int], method: str = 'yarn', dype: bool = True, dype_exponent: float = 2.0): # Add dype_exponent
+    def __init__(self, theta: int, axes_dim: list[int], method: str = 'yarn', dype: bool = True, dype_exponent: float = 2.0, base_resolution: int = 1024): # Add dype_exponent
         super().__init__()
         self.theta = theta
         self.axes_dim = axes_dim
@@ -16,7 +16,7 @@ class FluxPosEmbed(nn.Module):
         self.dype = dype if method != 'base' else False
         self.dype_exponent = dype_exponent
         self.current_timestep = 1.0
-        self.base_resolution = 1024
+        self.base_resolution = base_resolution
         self.base_patches = (self.base_resolution // 8) // 2
 
     def set_timestep(self, timestep: float):
@@ -26,7 +26,7 @@ class FluxPosEmbed(nn.Module):
         n_axes = ids.shape[-1]
         emb_parts = []
         pos = ids.float()
-        freqs_dtype = torch.bfloat16
+        freqs_dtype = torch.float32
 
         for i in range(n_axes):
             axis_pos = pos[..., i]
@@ -110,7 +110,7 @@ def apply_dype_to_flux(model: ModelPatcher, width: int, height: int, method: str
 
     return m
 
-def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float, shift: float) -> ModelPatcher:
+def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float, shift: float, start_at_sigma: float, base_resolution: int) -> ModelPatcher:
     m = model.clone()
 
     if not hasattr(m.model.model_sampling, "_dype_patched"):
@@ -137,7 +137,7 @@ def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: s
     except AttributeError:
         raise ValueError("The provided model is not a compatible Chroma model.")
 
-    new_pe_embedder = FluxPosEmbed(theta, axes_dim, method, enable_dype, dype_exponent)
+    new_pe_embedder = FluxPosEmbed(theta, axes_dim, method, enable_dype, dype_exponent, base_resolution)
     m.add_object_patch("diffusion_model.pe_embedder", new_pe_embedder)
 
     sigma_max = m.model.model_sampling.sigma_max.item()
@@ -147,7 +147,7 @@ def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: s
             timestep_tensor = args_dict.get("timestep")
             if timestep_tensor is not None and timestep_tensor.numel() > 0:
                 current_sigma = timestep_tensor.item()
-                if sigma_max > 0:
+                if sigma_max > 0 and current_sigma < start_at_sigma:
                     normalized_timestep = min(max(current_sigma / sigma_max, 0.0), 1.0)
                     new_pe_embedder.set_timestep(normalized_timestep)
 
