@@ -146,6 +146,7 @@ class DyPE_Chroma(io.ComfyNode):
                 io.Int.Input(
                     "base_resolution",
                     default=1024, min=0, max=8192, step=8,
+                    optional=True,
                     tooltip="Model resolution base value. Set to 0 to take the square root of width multiplied by height."
                 ),
             ],
