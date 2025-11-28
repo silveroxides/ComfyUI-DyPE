@@ -1,149 +1,9 @@
 {
   "id": "908d0bfb-e192-4627-9b57-147496e6e2dd",
   "revision": 0,
-  "last_node_id": 106,
-  "last_link_id": 292,
+  "last_node_id": 107,
+  "last_link_id": 293,
   "nodes": [
-    {
-      "id": 40,
-      "type": "DualCLIPLoader",
-      "pos": [
-        -320,
-        290
-      ],
-      "size": [
-        270,
-        130
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            64
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.40",
-        "Node name for S&R": "DualCLIPLoader",
-        "models": [
-          {
-            "name": "clip_l.safetensors",
-            "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
-            "directory": "text_encoders"
-          },
-          {
-            "name": "t5xxl_fp16.safetensors",
-            "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors",
-            "directory": "text_encoders"
-          }
-        ],
-        "ue_properties": {
-          "widget_ue_connectable": {
-            "clip_name1": true,
-            "clip_name2": true,
-            "type": true,
-            "device": true
-          },
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "clip_l.safetensors",
-        "t5xxl_fp16.safetensors",
-        "flux",
-        "default"
-      ],
-      "color": "#223",
-      "bgcolor": "#335"
-    },
-    {
-      "id": 43,
-      "type": "MarkdownNote",
-      "pos": [
-        -870,
-        110
-      ],
-      "size": [
-        520,
-        390
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "title": "Model links",
-      "properties": {
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "## Model links\n\n**Diffusion Model**\n\n- [flux1-krea-dev_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors)\n\nIf you need the original weights, head to [black-forest-labs/FLUX.1-Krea-dev](https://huggingface.co/black-forest-labs/FLUX.1-Krea-dev/), accept the agreement in the repo, then click the link below to download the models:\n\n- [flux1-krea-dev.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-Krea-dev/resolve/main/flux1-krea-dev.safetensors)\n\n**Text Encoder**\n\n- [clip_l.safetensors](https://huggingface.co/comfyanonymous/flux_text_encoders/blob/main/clip_l.safetensors)\n\n- [t5xxl_fp16.safetensors](https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors) or [t5xxl_fp8_e4m3fn_scaled.safetensors](https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors)\n\n**VAE**\n\n- [ae.safetensors](https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors)\n\n\n```\nComfyUI/\n├── models/\n│   ├── diffusion_models/\n│   │   └─── flux1-krea-dev_fp8_scaled.safetensors\n│   ├── text_encoders/\n│   │   ├── clip_l.safetensors\n│   │   └─── t5xxl_fp16.safetensors # or t5xxl_fp8_e4m3fn_scaled.safetensors\n│   └── vae/\n│       └── ae.safetensors\n```\n"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 39,
-      "type": "VAELoader",
-      "pos": [
-        -320,
-        470
-      ],
-      "size": [
-        270,
-        58
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            77,
-            85
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.40",
-        "Node name for S&R": "VAELoader",
-        "models": [
-          {
-            "name": "ae.safetensors",
-            "url": "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors",
-            "directory": "vae"
-          }
-        ],
-        "ue_properties": {
-          "widget_ue_connectable": {
-            "vae_name": true
-          },
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "FLUX1\\ae.safetensors"
-      ],
-      "color": "#223",
-      "bgcolor": "#335"
-    },
     {
       "id": 42,
       "type": "ConditioningZeroOut",
@@ -235,57 +95,6 @@
         }
       },
       "widgets_values": []
-    },
-    {
-      "id": 38,
-      "type": "UNETLoader",
-      "pos": [
-        -319.9999999999996,
-        154.75892789151453
-      ],
-      "size": [
-        270,
-        82
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            291
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.40",
-        "Node name for S&R": "UNETLoader",
-        "models": [
-          {
-            "name": "flux1-krea-dev_fp8_scaled.safetensors",
-            "url": "https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors",
-            "directory": "diffusion_models"
-          }
-        ],
-        "ue_properties": {
-          "widget_ue_connectable": {
-            "unet_name": true,
-            "weight_dtype": true
-          },
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "FLUX1\\flux1-krea-dev.safetensors",
-        "default"
-      ],
-      "color": "#223",
-      "bgcolor": "#335"
     },
     {
       "id": 55,
@@ -397,15 +206,15 @@
       "id": 27,
       "type": "EmptySD3LatentImage",
       "pos": [
-        -320,
-        630
+        -316.20890581244436,
+        792.0300000000001
       ],
       "size": [
         270,
         120
       ],
       "flags": {},
-      "order": 4,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -515,36 +324,6 @@
       ]
     },
     {
-      "id": 69,
-      "type": "MarkdownNote",
-      "pos": [
-        -869.9740753786278,
-        574.7910364476191
-      ],
-      "size": [
-        519.2421649643175,
-        338.01057378012047
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "title": "DyPE",
-      "properties": {
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "### Node Inputs\n\n*   **`method`**: The extrapolation strategy.\n    *   **`vision_yarn`:** Best for 4K+ and non-square images. Fixes stretching and artifacts automatically.\n    *   **`yarn` / `ntk`**: Legacy methods. Use `yarn` with `yarn_alt_scaling` for manual control.\n*   **`enable_dype`**: Toggles the dynamic (time-aware) algorithm. Keep enabled for best quality.\n*   **`dype_scale`**: Magnitude of the frequency shift. Default: `2.0`.\n*   **`dype_exponent`**: Aggressiveness of the dynamic schedule.\n    *   `2.0`: Best for **4K**.\n    *   `1.0`: Best for **2K**.\n    *   `0.5`: Best for **~1.5K**.\n*   **`yarn_alt_scaling`**: *(Legacy `yarn` only)* Switch between Anisotropic (Sharper, potential stretching) and Isotropic (Softer, accurate geometry).\n*   **`base_shift` / `max_shift`**: Advanced noise schedule controls. Defaults (`0.5` / `1.15`) are optimized for FLUX.\n\n## Join\n\n### [TokenDiffusion](https://t.me/TokenDiff) - AI for every home, creativity for every mind!\n\n### [TokenDiff Community Hub](https://t.me/TokenDiff_hub) - Questions, help, and thoughtful discussion. "
-      ],
-      "color": "#322",
-      "bgcolor": "#533"
-    },
-    {
       "id": 104,
       "type": "SaveImage",
       "pos": [
@@ -576,6 +355,217 @@
       ]
     },
     {
+      "id": 39,
+      "type": "VAELoader",
+      "pos": [
+        -314.4999999999999,
+        595.4000000000001
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            77,
+            85
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "VAELoader",
+        "models": [
+          {
+            "name": "ae.safetensors",
+            "url": "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors",
+            "directory": "vae"
+          }
+        ],
+        "ue_properties": {
+          "widget_ue_connectable": {
+            "vae_name": true
+          },
+          "version": "7.5.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "FLUX1\\ae.safetensors"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 40,
+      "type": "DualCLIPLoader",
+      "pos": [
+        -314.4999999999999,
+        415.4000000000002
+      ],
+      "size": [
+        270,
+        130
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            64
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "DualCLIPLoader",
+        "models": [
+          {
+            "name": "clip_l.safetensors",
+            "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
+            "directory": "text_encoders"
+          },
+          {
+            "name": "t5xxl_fp16.safetensors",
+            "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors",
+            "directory": "text_encoders"
+          }
+        ],
+        "ue_properties": {
+          "widget_ue_connectable": {
+            "clip_name1": true,
+            "clip_name2": true,
+            "type": true,
+            "device": true
+          },
+          "version": "7.5.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "clip_l.safetensors",
+        "t5xxl_fp16.safetensors",
+        "flux",
+        "default"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 107,
+      "type": "NunchakuFluxDiTLoader",
+      "pos": [
+        -318.2170000000008,
+        161.3490000000002
+      ],
+      "size": [
+        274.55224656081157,
+        202
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            293
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-nunchaku",
+        "ver": "1.0.2",
+        "Node name for S&R": "NunchakuFluxDiTLoader"
+      },
+      "widgets_values": [
+        "svd\\svdq-int4_r32-flux.1-krea-dev.safetensors",
+        0,
+        "nunchaku-fp16",
+        "auto",
+        0,
+        "bfloat16",
+        "enabled"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 43,
+      "type": "MarkdownNote",
+      "pos": [
+        -870,
+        110
+      ],
+      "size": [
+        518.3471074380165,
+        297.4380165289257
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Model links",
+      "properties": {
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.5.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "## Model links\n\n**Diffusion Model**\n\n\n\n**Text Encoder**\n\n- [clip_l.safetensors](https://huggingface.co/comfyanonymous/flux_text_encoders/blob/main/clip_l.safetensors)\n\n- [t5xxl_fp16.safetensors](https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors) or [t5xxl_fp8_e4m3fn_scaled.safetensors](https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors)\n\n**VAE**\n\n- [ae.safetensors](https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors)\n\n\n```\nComfyUI/\n├── models/\n│   ├── diffusion_models/\n│   │   └─── \n│   ├── text_encoders/\n│   │   ├── clip_l.safetensors\n│   │   └─── t5xxl_fp16.safetensors # or t5xxl_fp8_e4m3fn_scaled.safetensors\n│   └── vae/\n│       └── ae.safetensors\n```\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 69,
+      "type": "MarkdownNote",
+      "pos": [
+        -871.340102289358,
+        583.6702113673653
+      ],
+      "size": [
+        519.2421649643175,
+        338.01057378012047
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "DyPE",
+      "properties": {
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "### Node Inputs\n\n*   **`method`**: The extrapolation strategy.\n    *   **`vision_yarn`:** Best for 4K+ and non-square images. Fixes stretching and artifacts automatically.\n    *   **`yarn` / `ntk`**: Legacy methods. Use `yarn` with `yarn_alt_scaling` for manual control.\n*   **`enable_dype`**: Toggles the dynamic (time-aware) algorithm. Keep enabled for best quality.\n*   **`dype_scale`**: Magnitude of the frequency shift. Default: `2.0`.\n*   **`dype_exponent`**: Aggressiveness of the dynamic schedule.\n    *   `2.0`: Best for **4K**.\n    *   `1.0`: Best for **2K**.\n    *   `0.5`: Best for **~1.5K**.\n*   **`yarn_alt_scaling`**: *(Legacy `yarn` only)* Switch between Anisotropic (Sharper, potential stretching) and Isotropic (Softer, accurate geometry).\n*   **`base_shift` / `max_shift`**: Advanced noise schedule controls. Defaults (`0.5` / `1.15`) are optimized for FLUX.\n\n## Join\n\n### [TokenDiffusion](https://t.me/TokenDiff) - AI for every home, creativity for every mind!\n\n### [TokenDiff Community Hub](https://t.me/TokenDiff_hub) - Questions, help, and thoughtful discussion. "
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
       "id": 106,
       "type": "DyPE_FLUX",
       "pos": [
@@ -593,7 +583,7 @@
         {
           "name": "model",
           "type": "MODEL",
-          "link": 291
+          "link": 293
         }
       ],
       "outputs": [
@@ -615,8 +605,8 @@
         2048,
         2048,
         "auto",
-        "vision_yarn",
-        false,
+        "yarn",
+        true,
         true,
         1024,
         1,
@@ -711,18 +701,18 @@
       "IMAGE"
     ],
     [
-      291,
-      38,
-      0,
-      106,
-      0,
-      "MODEL"
-    ],
-    [
       292,
       106,
       0,
       31,
+      0,
+      "MODEL"
+    ],
+    [
+      293,
+      107,
+      0,
+      106,
       0,
       "MODEL"
     ]
@@ -734,8 +724,8 @@
       "bounding": [
         -330,
         80,
-        300,
-        460
+        301.1,
+        608.5
       ],
       "color": "#3f789e",
       "font_size": 24,
@@ -745,8 +735,8 @@
       "id": 2,
       "title": "Step 2 - Image Size",
       "bounding": [
-        -330,
-        560,
+        -326.20890581244436,
+        722.0300000000001,
         300,
         200
       ],
@@ -784,10 +774,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.7513148009015777,
+      "scale": 0.7513148009015779,
       "offset": [
-        981.9790000000002,
-        69.86000000000001
+        908.7831022893579,
+        25.93699999999999
       ]
     },
     "frontendVersion": "1.32.9",
