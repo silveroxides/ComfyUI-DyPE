@@ -158,6 +158,54 @@ def apply_dype_to_chroma(model: ModelPatcher, width: int, height: int, method: s
 
     return m
 
+def apply_dype_to_zimage(model: ModelPatcher, width: int, height: int, method: str, enable_dype: bool, dype_exponent: float, shift: float, start_at_sigma: float, base_resolution: int) -> ModelPatcher:
+    m = model.clone()
+
+    if not hasattr(m.model.model_sampling, "_dype_patched"):
+        model_sampler = m.model.model_sampling
+        if isinstance(model_sampler, model_sampling.ModelSamplingDiscreteFlow):
+            patch_size = m.model.diffusion_model.patch_size
+            latent_h, latent_w = height // 8, width // 8
+            padded_h, padded_w = math.ceil(latent_h / patch_size) * patch_size, math.ceil(latent_w / patch_size) * patch_size
+            image_seq_len = (padded_h // patch_size) * (padded_w // patch_size)
+            base_seq_len, max_seq_len = 256, 4096
+            slope = shift / (max_seq_len - base_seq_len)
+            intercept = shift - slope * base_seq_len
+            dype_shift = image_seq_len * slope + intercept
+
+            def patched_sigma_func(self, timestep):
+                return model_sampling.time_snr_shift(dype_shift, timestep)
+
+            model_sampler.sigma = types.MethodType(patched_sigma_func, model_sampler)
+            model_sampler._dype_patched = True
+
+    try:
+        orig_embedder = m.model.diffusion_model.rope_embedder
+        theta, axes_dim = orig_embedder.theta, orig_embedder.axes_dim
+    except AttributeError:
+        raise ValueError("The provided model is not a compatible Z-Image model.")
+
+    new_rope_embedder = FluxPosEmbed(theta, axes_dim, method, enable_dype, dype_exponent, base_resolution)
+    m.add_object_patch("diffusion_model.rope_embedder", new_rope_embedder)
+
+    sigma_max = m.model.model_sampling.sigma_max.item()
+
+    def dype_wrapper_function(model_function, args_dict):
+        if enable_dype:
+            timestep_tensor = args_dict.get("timestep")
+            if timestep_tensor is not None and timestep_tensor.numel() > 0:
+                current_sigma = timestep_tensor.item()
+                if sigma_max > 0 and current_sigma < start_at_sigma:
+                    normalized_timestep = min(max(current_sigma / sigma_max, 0.0), 1.0)
+                    new_rope_embedder.set_timestep(normalized_timestep)
+
+        input_x, c = args_dict.get("input"), args_dict.get("c", {})
+        return model_function(input_x, args_dict.get("timestep"), **c)
+
+    m.set_model_unet_function_wrapper(dype_wrapper_function)
+
+    return m
+
 def apply_dype_to_wan(model: ModelPatcher, width: int, height: int, length: int, method: str, enable_dype: bool, dype_exponent: float, shift: float) -> ModelPatcher:
     m = model.clone()
 
