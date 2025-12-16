@@ -17,13 +17,16 @@ def apply_dype_to_model(model: ModelPatcher, model_type: str, width: int, height
     is_nunchaku = False
     is_qwen = False
     is_z_image = False
+    is_chroma = False
 
     if model_type == "nunchaku":
         is_nunchaku = True
     elif model_type == "qwen":
         is_qwen = True
-    elif model_type == "z_image":
+    elif model_type == "zimage":
         is_z_image = True
+    elif model_type == "chroma":
+        is_chroma = True
     elif model_type == "flux":
         pass
     else: # auto
@@ -36,10 +39,12 @@ def apply_dype_to_model(model: ModelPatcher, model_type: str, width: int, height
                 is_z_image = True
             elif hasattr(dm, "model") and hasattr(dm.model, "pos_embed"):
                 is_nunchaku = True
+            elif isinstance(m.model.model_sampling, model_sampling.ModelSamplingDiscreteFlow):
+                is_chroma = True
         else:
             raise ValueError("The provided model is not a compatible model.")
 
-    new_dype_params = (width, height, base_shift, max_shift, method, yarn_alt_scaling, base_resolution, dype_start_sigma, is_nunchaku, is_qwen, is_z_image)
+    new_dype_params = (width, height, base_shift, max_shift, method, yarn_alt_scaling, base_resolution, dype_start_sigma, is_nunchaku, is_qwen, is_z_image, is_chroma)
 
     should_patch_schedule = True
     if hasattr(m.model, "_dype_params"):
@@ -72,11 +77,33 @@ def apply_dype_to_model(model: ModelPatcher, model_type: str, width: int, height
 
     if enable_dype and should_patch_schedule:
         try:
-            if isinstance(m.model.model_sampling, model_sampling.ModelSamplingFlux) or is_qwen or is_z_image:
-                latent_h, latent_w = height // 8, width // 8
-                padded_h, padded_w = math.ceil(latent_h / patch_size) * patch_size, math.ceil(latent_w / patch_size) * patch_size
-                image_seq_len = (padded_h // patch_size) * (padded_w // patch_size)
+            latent_h, latent_w = height // 8, width // 8
+            padded_h, padded_w = math.ceil(latent_h / patch_size) * patch_size, math.ceil(latent_w / patch_size) * patch_size
+            image_seq_len = (padded_h // patch_size) * (padded_w // patch_size)
 
+            if is_chroma or isinstance(m.model.model_sampling, model_sampling.ModelSamplingDiscreteFlow):
+                # Chroma/AuraFlow pattern: single shift with resolution scaling
+                x1, x2 = 256, 4096
+                if image_seq_len <= x1:
+                    dype_shift = max_shift
+                else:
+                    mm = max_shift / (x2 - x1)
+                    b = max_shift - mm * x1
+                    dype_shift = image_seq_len * mm + b
+                
+                dype_shift = max(0.0, dype_shift)
+
+                class DypeModelSamplingDiscreteFlow(model_sampling.ModelSamplingDiscreteFlow, model_sampling.CONST):
+                    pass
+
+                new_model_sampler = DypeModelSamplingDiscreteFlow(m.model.model_config)
+                new_model_sampler.set_parameters(shift=dype_shift, multiplier=1.0)
+
+                m.add_object_patch("model_sampling", new_model_sampler)
+                m.model._dype_params = new_dype_params
+
+            elif isinstance(m.model.model_sampling, model_sampling.ModelSamplingFlux) or is_qwen or is_z_image:
+                # FLUX pattern: interpolate between base_shift and max_shift
                 base_seq_len = derived_base_seq_len
                 max_seq_len = image_seq_len
 
@@ -102,8 +129,13 @@ def apply_dype_to_model(model: ModelPatcher, model_type: str, width: int, height
 
     elif not enable_dype:
         if hasattr(m.model, "_dype_params"):
-            class DefaultModelSamplingFlux(model_sampling.ModelSamplingFlux, model_sampling.CONST): pass
-            default_sampler = DefaultModelSamplingFlux(m.model.model_config)
+            # Reset to appropriate default sampler based on model type
+            if is_chroma or isinstance(m.model.model_sampling, model_sampling.ModelSamplingDiscreteFlow):
+                class DefaultModelSamplingDiscreteFlow(model_sampling.ModelSamplingDiscreteFlow, model_sampling.CONST): pass
+                default_sampler = DefaultModelSamplingDiscreteFlow(m.model.model_config)
+            else:
+                class DefaultModelSamplingFlux(model_sampling.ModelSamplingFlux, model_sampling.CONST): pass
+                default_sampler = DefaultModelSamplingFlux(m.model.model_config)
             m.add_object_patch("model_sampling", default_sampler)
             del m.model._dype_params
 
